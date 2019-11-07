@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Order;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrderController extends Controller
 {
@@ -15,7 +16,8 @@ class OrderController extends Controller
      */
     public function index()
     {
-        return Order::all();
+        return response(Order::all(),200)
+                    ->header('Content-Range', 'bytes:0-9 / *');
     }
 
     /**
@@ -46,8 +48,10 @@ class OrderController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function show($id)
-    {
-        //
+    {   
+        return Order::where('id',$id)->first();
+        // return response(Order::where('id',$id),200)
+        //             ->header('Content-Range', 'bytes:0-9 / *');
     }
 
     /**
