@@ -14,10 +14,30 @@ class OrderController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        return response(Order::all(),200)
-                    ->header('Content-Range', 'bytes:0-9 / *');
+        $orderList = Order::where('deleted','0');
+        $filter = json_decode($request->input('filter'),1);
+        $sort = json_decode($request->input('sort'),1);
+        $range = json_decode($request->input('range'),1);
+        $min = $range[0];
+        $max = $range[1];
+        
+        if (!empty($filter)) {
+            foreach ($filter as $key => $value) {
+                $orderList = $orderList->where($key, "like", "%$value%");
+            }
+        }
+        if (!empty($sort)) {
+            $orderList = $orderList->orderBy($sort[0],$sort[1]);
+        }
+        $orderCount = $orderList->count();
+        if (!empty($range)) {
+            $orderList = $orderList->skip($min)->take($max-$min+1)->get();
+        }
+        
+        return response($orderList,200)
+                    ->header('Content-Range', "orders $min-$max/$orderCount");
     }
 
     /**
@@ -85,6 +105,6 @@ class OrderController extends Controller
      */
     public function destroy($id)
     {
-        //
+        return Order::where('id',$id)->update(["deleted"=>'1']);
     }
 }
